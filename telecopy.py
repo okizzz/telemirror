@@ -5,15 +5,15 @@ import time
 from telethon.sessions import StringSession
 from telethon.sync import TelegramClient
 from telethon.tl.types import MessageService
-
+from app.settings import (API_HASH, API_ID, SESSION_STRING)
 # put your values
 # Telegram API
-API_HASH = "xxx"
-API_ID = "xxx"
+# API_HASH = "xxx"
+# API_ID = "xxx"
 # Session string by login.py
-SESSION_STRING = "xxx"
-SOURCE_CHAT = '@xxx'
-TARGET_CHAT = '@xxx'
+# SESSION_STRING = "xxx"
+SOURCE_CHAT = '@fisting300b'
+TARGET_CHAT = '@dimanallo'
 # Timeout after 50 messages
 LIMIT_TO_WAIT = 50
 
@@ -26,6 +26,7 @@ def do_full_copy():
             if isinstance(message, MessageService):
                 continue
             try:
+                print(message)
                 client.send_message(TARGET_CHAT, message)
                 amount_sended += 1
                 if amount_sended >= LIMIT_TO_WAIT:

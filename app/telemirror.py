@@ -134,7 +134,6 @@ async def handler_edit_message(event):
 
 if __name__ == '__main__':
     client.start()
-    print(CHATS)
     if client.is_user_authorized():
         me = client.get_me()
         logger.info(f'Connected as {me.username} ({me.phone})')
