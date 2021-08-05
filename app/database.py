@@ -11,6 +11,7 @@ class Database:
         self.db_name = db_name
         self.db_file_name = db_file_name
         if not os.path.isfile(f'../db/{db_file_name}.db'):
+            os.mkdir("../db")
             self.__create_table()
 
     def __db(self, query: str):
