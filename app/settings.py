@@ -1,59 +1,50 @@
-import re
-from os import environ
+import json
+import logging
+from json import JSONDecodeError
 
-from dotenv import load_dotenv
+logging.basicConfig()
+logger = logging.getLogger(__name__)
 
-load_dotenv()
+with open('../settings.json', 'r') as f:
 
+    try:
+        settings = json.load(f)
+    except JSONDecodeError as e:
+        logger.warning(f'Please check settings.json. Exept: {e}')
+        exit(1)
 
-def str2bool(string_value):
-    """Converts string representation of boolean to boolean value
+    API_ID = settings['api_id']
+    API_HASH = settings['api_hash']
+    CHATS = []
 
-    Args:
-        string_value (str): String representation of boolean
+    CM = settings['channels_mapping']
+    CHANNEL_MAPPING = {}
+    if CM is not None:
+        for match in CM:
+            sources = match['sources']
+            targets = match['targets']
+            settings_mapping = match['settings']
+            try:
+                settings_mapping['white_list']
+            except KeyError:
+                settings_mapping['white_list'] = []
+            try:
+                settings_mapping['black_list']
+            except KeyError:
+                settings_mapping['black_list'] = []
+            try:
+                settings_mapping['replace']
+            except KeyError:
+                settings_mapping['replace'] = []
+            for source in sources:
+                CHANNEL_MAPPING.setdefault(
+                    source, []).extend([targets, settings_mapping])
+        CHATS = list(CHANNEL_MAPPING.keys())
 
-    Returns:
-        bool: True or False
-    """
-    return string_value.lower() == 'true'
-
-
-# telegram app id
-API_ID = environ.get('API_ID')
-# telegram app hash
-API_HASH = environ.get('API_HASH')
-
-# channels id to mirroring
-CHATS = []
-
-# channels mapping
-# [source:target1,target2];[source2:...]
-CM = environ.get('CHAT_MAPPING')
-CHANNEL_MAPPING = {}
-if CM is not None:
-    matches = re.findall(
-        r'\[?((?:-100\d+,?)+):((?:-100\d+,?)+)\]?', CM, re.MULTILINE)
-    for match in matches:
-        sources = [int(val) for val in match[0].split(',')]
-        targets = [int(val) for val in match[1].split(',')]
-        for source in sources:
-            CHANNEL_MAPPING.setdefault(source, []).extend(targets)
-    CHATS = list(CHANNEL_MAPPING.keys())
-
-TIMEOUT_MIRRORING = float(environ.get('TIMEOUT_MIRRORING', '0.1'))
-# amount messages before timeout
-LIMIT_TO_WAIT = 50
-# auth session string: can be obtain by run login.py
-SESSION_STRING = environ.get('SESSION_STRING')
-
-# remove urls from messages
-REMOVE_URLS = str2bool(environ.get('REMOVE_URLS', 'False'))
-REMOVE_URLS_WL = environ.get('REMOVE_URLS_WL')
-REMOVE_URLS_WL_DATA = None
-if REMOVE_URLS_WL is not None:
-    REMOVE_URLS_WL_DATA = REMOVE_URLS_WL.split(',')
-
-DB_NAME = environ.get("DB_NAME")
-DB_FILE_NAME = environ.get('DB_FILE_NAME')
-
-LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
+    TIMEOUT_MIRRORING = settings['timeout_mirroring']
+    LIMIT_TO_WAIT = 50
+    # auth session string: can be obtain by run login.py
+    SESSION_STRING = settings['session_string']
+    DB_NAME = settings['db_name']
+    DB_FILE_NAME = settings['db_file_name']
+    LOG_LEVEL = settings['log_level']

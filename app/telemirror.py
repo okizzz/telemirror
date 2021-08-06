@@ -8,9 +8,9 @@ from telethon.tl.types import InputMediaPoll, MessageMediaPoll, MessageEntityTex
 
 from database import Database
 from settings import (API_HASH, API_ID, CHANNEL_MAPPING, CHATS,
-                      LIMIT_TO_WAIT, LOG_LEVEL, REMOVE_URLS, SESSION_STRING,
+                      LIMIT_TO_WAIT, LOG_LEVEL, SESSION_STRING,
                       TIMEOUT_MIRRORING, DB_NAME, DB_FILE_NAME)
-from utils import remove_urls
+from utils import check_list, replace_text
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -21,22 +21,13 @@ client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
 db = Database(DB_NAME, DB_FILE_NAME)
 
 
-def remove_url_from_message(message):
-    message.message = remove_urls(message.message)
-    if message.entities is not None:
-        for e in message.entities:
-            if isinstance(e, MessageEntityTextUrl):
-                e.url = remove_urls(e.url)
-    return message
-
-
 @client.on(events.Album(chats=CHATS))
 async def handler_album(event):
     """Album event handler.
     """
     try:
         logger.debug(f'New Album from {event.chat_id}:\n{event}')
-        targets = CHANNEL_MAPPING.get(event.chat_id)
+        targets = CHANNEL_MAPPING.get(event.chat_id)[0]
         if targets is None or len(targets) < 1:
             logger.warning(f'Album. No target channel for {event.chat_id}')
             return
@@ -47,8 +38,6 @@ async def handler_album(event):
         # original messages ids
         original_idxs = []
         for item in event.messages:
-            if REMOVE_URLS:
-                item = remove_url_from_message(item)
             files.append(item.media)
             caps.append(item.message)
             original_idxs.append(item.id)
@@ -78,13 +67,21 @@ async def handler_new_message(event):
         return
     try:
         logger.debug(f'New message from {event.chat_id}:\n{event.message}')
-        targets = CHANNEL_MAPPING.get(event.chat_id)
+        targets = CHANNEL_MAPPING.get(event.chat_id)[0]
+        settings = CHANNEL_MAPPING.get(event.chat_id)[1]
         if targets is None or len(targets) < 1:
             logger.warning(
                 f'NewMessage. No target channel for {event.chat_id}')
             return
-        if REMOVE_URLS:
-            event.message = remove_url_from_message(event.message)
+        if len(settings['white_list']) > 0:
+            if check_list(settings['white_list'], event.message.message) is False:
+                return
+        if len(settings['black_list']) > 0:
+            if check_list(settings['black_list'], event.message.message) is True:
+                return
+        if len(settings['replace']) > 0:
+            event.message.message = replace_text(
+                settings['replace'], event.message.message)
         sent = 0
         for chat in targets:
             mirror_message = None
@@ -117,12 +114,20 @@ async def handler_edit_message(event):
     try:
         logger.debug(f'Edit message {event.message.id} from {event.chat_id}')
         targets = db.find_by_original_id(event.message.id, event.chat_id)
+        settings = CHANNEL_MAPPING.get(event.chat_id)[1]
         if targets is None or len(targets) < 1:
             logger.warning(
                 f'MessageEdited. No target channel for {event.chat_id}')
             return
-        if REMOVE_URLS:
-            event.message = remove_url_from_message(event.message)
+        if len(settings['white_list']) > 0:
+            if check_list(settings['white_list'], event.message.message) is False:
+                return
+        if len(settings['black_list']) > 0:
+            if check_list(settings['black_list'], event.message.message) is True:
+                return
+        if len(settings['replace']) > 0:
+            text_edited = replace_text(
+                settings['replace'], event.message.message)
         sent = 0
         for chat in targets:
             await client.edit_message(chat[3], chat[2], event.message.message)

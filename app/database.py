@@ -11,7 +11,7 @@ class Database:
         self.db_name = db_name
         self.db_file_name = db_file_name
         if not os.path.isfile(f'../db/{db_file_name}.db'):
-            os.mkdir("../db")
+            os.makedirs("../db", exist_ok=True)
             self.__create_table()
 
     def __db(self, query: str):
@@ -32,14 +32,14 @@ class Database:
                 sqlite_connection.close()
 
     def __create_table(self):
-        query_create_table = f'''CREATE TABLE if not exists {self.db_name} (
+        query_create_table = f'''CREATE TABLE IF NOT EXISTS {self.db_name} (
                                       id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                                       original_id INTEGER NOT NULL,
                                       original_channel INTEGER NOT NULL,
                                       mirror_id INTEGER NOT NULL,
                                       mirror_channel INTEGER NOT NULL);'''
 
-        query_create_index = f'''CREATE INDEX index_original ON {self.db_name}(
+        query_create_index = f'''CREATE INDEX IF NOT EXISTS index_original ON {self.db_name}(
                                       original_id, original_channel);'''
         self.__db(query_create_table)
         self.__db(query_create_index)

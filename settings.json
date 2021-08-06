@@ -1,0 +1,25 @@
+{
+  "api_id": 12834,
+  "api_hash": "c84d9229db1d6be95c067b02b126352c",
+  "session_string": "1ApWapzMBuwMcmAvf4InW9aXjjnHM7A1Hgv3Xur_eDRp5obd4YvfkVdKhJCF8-mgQ6RwU9PebyQzqWkYMQjWQlkVrbFyNcBSdcPAvOUjR22fu9nvwpLRIOODtK9wjuSg5IoPp_rSrfmEkcQHQUOhDeK7zFMn0wOO3UpAxodRigBNKQezM4ZyqJrcTFUldKXGvVm7VhXgEYR3OpTBsiok8NO3IL5PN9mDWJXAsakxdx19Zq9KkA2iu5xcLUxuDQ-tL5OiS41_Ps-q8t30BTXjJoOH2hJmng1u1uUzHMDYFtPLCeF3AasZd2FyoXo9EBO0bit1DrlFfLalsbiRCJaQEPovnJX8hr_c=",
+  "channels_mapping": [
+    {
+      "sources": [-1001505804194],
+      "targets": [-1001562150048, -1001553176935],
+      "settings": {
+        "white_list": [],
+        "black_list": ["suka", "pzdc"],
+        "replace": [
+          { "from": "://youtube.com/", "to": "https://youtu.be/z0jeDlLwcow" },
+          { "from": "://youtube.com", "to": "https://youtu.be/z0jeDlLwcow" },
+          { "from": "://youtu.be", "to": "https://youtu.be/z0jeDlLwcow" },
+          { "from": "://youtu.be/", "to": "https://youtu.be/z0jeDlLwcow" }
+        ]
+      }
+    }
+  ],
+  "timeout_mirroring": 0.1,
+  "db_name": "telemirror",
+  "db_file_name": "db_telemirror",
+  "log_level": "INFO"
+}
