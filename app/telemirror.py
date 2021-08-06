@@ -126,7 +126,7 @@ async def handler_edit_message(event):
             if check_list(settings['black_list'], event.message.message) is True:
                 return
         if len(settings['replace']) > 0:
-            text_edited = replace_text(
+            event.message.message = replace_text(
                 settings['replace'], event.message.message)
         sent = 0
         for chat in targets:
